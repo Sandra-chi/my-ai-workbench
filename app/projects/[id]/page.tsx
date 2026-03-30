@@ -7,19 +7,20 @@ import { getProject, getProjectTasks } from "@/lib/supabase/queries";
 import type { Project, Task } from "@/lib/types";
 
 type ProjectDetailPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const project = await getProject(params.id);
+  const { id } = await params;
+  const project = await getProject(id);
 
   if (!project) {
     notFound();
   }
 
-  const tasks = await getProjectTasks(params.id);
+  const tasks = await getProjectTasks(id);
 
   return (
     <div className="space-y-6">
