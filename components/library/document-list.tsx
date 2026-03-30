@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,9 +26,9 @@ export function DocumentList() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     loadDocuments();
-  });
+  }, []);
 
   const filteredDocuments = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -49,7 +49,7 @@ export function DocumentList() {
     const tags = tagsInput.split(",").map((t: string) => t.trim()).filter((t: string) => Boolean);
 
     try {
-      const newDoc = await createDocument({
+      await createDocument({
         title,
         file_name: title,
         file_type: fileType as "pdf" | "docx" | "txt" | "md" | "audio",
@@ -110,7 +110,7 @@ export function DocumentList() {
                     </div>
                   )}
                 </div>
-              ))}
+              ))
             )}
           </div>
         </CardContent>

@@ -19,6 +19,19 @@ export function ReportBuilder() {
     );
   };
 
+  const getReportTypeLabel = (reportType: string) => {
+    switch (reportType) {
+      case "daily":
+        return "日报";
+      case "weekly":
+        return "周报";
+      case "monthly":
+        return "月报";
+      default:
+        return reportType;
+    }
+  };
+
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
       <Card>
@@ -81,8 +94,10 @@ export function ReportBuilder() {
                   <FileText className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{report.periodLabel}</p>
-                  <p className="mt-1 text-xs text-slate-500">{report.outputText}</p>
+                  <p className="text-sm font-medium">
+                    {getReportTypeLabel(report.report_type)} · {new Date(report.created_at).toLocaleDateString()}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{report.output_text?.substring(0, 80)}...</p>
                 </div>
               </div>
             ))}

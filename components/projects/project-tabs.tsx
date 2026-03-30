@@ -3,20 +3,28 @@
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { contents, documents, meetings, tasks } from "@/lib/mock-data";
+import { getDocuments, getMeetings, getTasks, getContents } from "@/lib/supabase/queries";
 import type { Project } from "@/lib/types";
 import { ProjectChat } from "@/components/projects/project-chat";
 
 const tabs = ["概览", "资料", "任务", "聊天", "产出"] as const;
 type Tab = (typeof tabs)[number];
 
-export function ProjectTabs({ project }: { project: Project }) {
+interface ProjectTabsProps {
+  project: Project;
+  documents?: any[];
+  meetings?: any[];
+  tasks?: any[];
+  contents?: any[];
+}
+
+export function ProjectTabs({ project, documents = [], meetings = [], tasks = [], contents = [] }: ProjectTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>("概览");
 
-  const projectDocuments = useMemo(() => documents.filter((item) => item.projectId === project.id), [project.id]);
-  const projectMeetings = useMemo(() => meetings.filter((item) => item.projectId === project.id), [project.id]);
-  const projectTasks = useMemo(() => tasks.filter((item) => item.projectId === project.id), [project.id]);
-  const projectContents = useMemo(() => contents.filter((item) => item.projectId === project.id), [project.id]);
+  const projectDocuments = useMemo(() => documents.filter((item) => item.project_id === project.id), [documents, project.id]);
+  const projectMeetings = useMemo(() => meetings.filter((item) => item.project_id === project.id), [meetings, project.id]);
+  const projectTasks = useMemo(() => tasks.filter((item) => item.project_id === project.id), [tasks, project.id]);
+  const projectContents = useMemo(() => contents.filter((item) => item.project_id === project.id), [contents, project.id]);
 
   return (
     <div className="space-y-6">
@@ -45,12 +53,12 @@ export function ProjectTabs({ project }: { project: Project }) {
               </div>
               <div>
                 <p className="text-xs text-slate-500">当前阶段</p>
-                <p className="mt-1 text-sm">{project.currentStage}</p>
+                <p className="mt-1 text-sm">{project.current_stage}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">标签</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
+                  {project.tags?.map((tag: string) => (
                     <Badge key={tag}>{tag}</Badge>
                   ))}
                 </div>
@@ -78,12 +86,16 @@ export function ProjectTabs({ project }: { project: Project }) {
               <CardTitle>项目资料</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {projectDocuments.map((doc) => (
-                <div key={doc.id} className="rounded-xl border border-border p-4">
-                  <p className="text-sm font-medium">{doc.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">{doc.summary}</p>
-                </div>
-              ))}
+              {projectDocuments.length === 0 ? (
+                <p className="text-slate-500 py-4">暂无资料</p>
+              ) : (
+                projectDocuments.map((doc) => (
+                  <div key={doc.id} className="rounded-xl border border-border p-4">
+                    <p className="text-sm font-medium">{doc.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">{doc.summary}</p>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -92,12 +104,16 @@ export function ProjectTabs({ project }: { project: Project }) {
               <CardTitle>关联会议</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {projectMeetings.map((meeting) => (
-                <div key={meeting.id} className="rounded-xl border border-border p-4">
-                  <p className="text-sm font-medium">{meeting.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">{meeting.summary}</p>
-                </div>
-              ))}
+              {projectMeetings.length === 0 ? (
+                <p className="text-slate-500 py-4">暂无会议</p>
+              ) : (
+                projectMeetings.map((meeting) => (
+                  <div key={meeting.id} className="rounded-xl border border-border p-4">
+                    <p className="text-sm font-medium">{meeting.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">{meeting.summary}</p>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
@@ -109,15 +125,19 @@ export function ProjectTabs({ project }: { project: Project }) {
             <CardTitle>项目任务</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {projectTasks.map((task) => (
-              <div key={task.id} className="rounded-xl border border-border p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-medium">{task.title}</p>
-                  <Badge>{task.status}</Badge>
+            {projectTasks.length === 0 ? (
+              <p className="text-slate-500 py-4">暂无任务</p>
+            ) : (
+              projectTasks.map((task) => (
+                <div key={task.id} className="rounded-xl border border-border p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-medium">{task.title}</p>
+                    <Badge>{task.status}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">优先级：{task.priority}</p>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">优先级：{task.priority}</p>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       ) : null}
@@ -130,12 +150,16 @@ export function ProjectTabs({ project }: { project: Project }) {
             <CardTitle>项目产出</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {projectContents.map((content) => (
-              <div key={content.id} className="rounded-xl border border-border p-4">
-                <p className="text-sm font-medium">{content.title}</p>
-                <p className="mt-1 text-xs text-slate-500">{content.outputText}</p>
-              </div>
-            ))}
+            {projectContents.length === 0 ? (
+              <p className="text-slate-500 py-4">暂无产出</p>
+            ) : (
+              projectContents.map((content) => (
+                <div key={content.id} className="rounded-xl border border-border p-4">
+                  <p className="text-sm font-medium">{content.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">{content.output_text}</p>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       ) : null}

@@ -65,7 +65,7 @@ export default async function HomePage() {
           items={projects.map((project) => ({
             id: project.id,
             title: project.name,
-            subtitle: `${project.currentStage} · ${project.goal}`,
+            subtitle: `${project.current_stage} · ${project.goal}`,
             href: `/projects/${project.id}`
           }))}
         />
@@ -109,7 +109,7 @@ export default async function HomePage() {
             {contents.map((content) => (
               <div key={content.id} className="rounded-xl border border-border p-4">
                 <p className="text-sm font-medium">{content.title}</p>
-                <p className="mt-1 text-xs text-slate-500">{content.outputText}</p>
+                <p className="mt-1 text-xs text-slate-500">{content.output_text}</p>
               </div>
             ))}
             <Link href="/content" className="inline-flex items-center text-sm font-medium text-slate-700">

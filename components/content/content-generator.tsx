@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Save, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,9 +35,9 @@ export function ContentGenerator() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     loadData();
-  });
+  }, []);
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -56,7 +56,7 @@ export function ContentGenerator() {
 
       if (response.ok) {
         const result = await response.json();
-        setOutput(result.output || result);
+        setOutput(result.output || result.text || result);
       } else {
         alert("生成失败");
       }
@@ -72,7 +72,7 @@ export function ContentGenerator() {
 
     setIsSaving(true);
     try {
-      const newContent = await createContent({
+      await createContent({
         title: `${template} - ${topic}`,
         content_type: template as any,
         output_text: output,
@@ -112,7 +112,7 @@ export function ContentGenerator() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && contents.length === 0) {
     return <p className="text-center text-slate-500">加载中...</p>;
   }
 
@@ -155,7 +155,12 @@ export function ContentGenerator() {
             />
           </div>
           <Button className="w-full" onClick={handleGenerate} disabled={isLoading}>
-            {isLoading ? "生成中..." : <><Sparkles className="mr-2 h-4 w-4" />生成内容}
+            {isLoading ? "生成中..." : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                生成内容
+              </>
+            )}
           </Button>
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-xs font-medium text-slate-700">推荐 Prompt 模板</p>
@@ -176,7 +181,11 @@ export function ContentGenerator() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="min-h-[420px] rounded-2xl border border-border bg-slate-50 p-4">
-            {output ? <pre className="text-sm leading-7 whitespace-pre-wrap">{output}</pre> : <p className="text-sm text-slate-500">生成内容后显示在这里</p>}
+            {output ? (
+              <pre className="text-sm leading-7 whitespace-pre-wrap">{output}</pre>
+            ) : (
+              <p className="text-sm text-slate-500">生成内容后显示在这里</p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={() => navigator.clipboard.writeText(output || "")}>
